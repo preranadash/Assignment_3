@@ -1,0 +1,166 @@
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <math.h>
+
+#include <fftw3.h>
+
+
+
+#define PI 3.14159265358979323846
+
+
+
+// Define Gaussian function
+
+double gaussian(double x) {
+
+    return exp(-x * x);
+
+}
+
+
+
+// Compute the Fourier transform of Gaussian function
+
+void fourier_transform_gaussian(double *x_values, double *k_values, double *result, int N) {
+
+    int i, j;
+
+    fftw_complex *in, *out;
+
+    fftw_plan plan;
+
+
+
+    // Allocate memory for input and output arrays
+
+    in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+
+
+
+    // Create FFTW plan
+
+    plan = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+
+
+
+    // Fill input array with Gaussian values
+
+    for (i = 0; i < N; i++) {
+
+        in[i][0] = gaussian(x_values[i]);
+
+        in[i][1] = 0.0; // Imaginary part is zero
+
+    }
+
+
+
+    // Execute FFT
+
+    fftw_execute(plan);
+
+
+
+    // Store results in the result array
+
+    for (i = 0; i < N; i++) {
+
+        result[i] = out[i][0] / sqrt(2 * PI); // Normalize by sqrt(2 * pi)
+
+    }
+
+
+
+    // Clean up
+
+    fftw_destroy_plan(plan);
+
+    fftw_free(in);
+
+    fftw_free(out);
+
+}
+
+
+
+int main() {
+
+    // Define the range of x values (domain)
+
+    double x_min = -10;
+
+    double x_max = 10;
+
+    int num_x_points = 1000;
+
+    double *x_values = (double*) malloc(num_x_points * sizeof(double));
+
+    double *k_values = (double*) malloc(num_x_points * sizeof(double));
+
+    double *x_FT_numerical_values = (double*) malloc(num_x_points * sizeof(double));
+
+
+
+    // Generate x values
+
+    for (int i = 0; i < num_x_points; i++) {
+
+        x_values[i] = x_min + i * (x_max - x_min) / (num_x_points - 1);
+
+        // Generate corresponding k values for FFT
+
+        k_values[i] = 2 * PI * i / (x_max - x_min);
+
+    }
+
+
+
+    // Compute numerical Fourier transform using FFTW
+
+    fourier_transform_gaussian(x_values, k_values, x_FT_numerical_values, num_x_points);
+
+
+
+    // Save the results to a text file
+
+    FILE *output_file;
+
+    output_file = fopen("Gaussian_FT.txt", "w");
+
+    if (output_file == NULL) {
+
+        printf("Error opening file!\n");
+
+        exit(1);
+
+    }
+
+    for (int i = 0; i < num_x_points; i++) {
+
+        fprintf(output_file, "%f : %f\n", k_values[i], x_FT_numerical_values[i]);
+
+    }
+
+    fclose(output_file);
+
+
+
+    // Free dynamically allocated memory
+
+    free(x_values);
+
+    free(k_values);
+
+    free(x_FT_numerical_values);
+
+
+
+    return 0;
+
+}
+
