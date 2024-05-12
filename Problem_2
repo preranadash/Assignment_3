@@ -1,0 +1,178 @@
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <math.h>
+
+#include <fftw3.h>
+
+
+
+#define PI 3.14159265358979323846
+
+
+
+// Define sinc function
+
+double sinc(double x) {
+
+    if (x == 0) {
+
+        return 1.0;
+
+    } else {
+
+        return sin(x) / x;
+
+    }
+
+}
+
+
+
+// Compute the Fourier transform of sinc function
+
+void fourier_transform_sinc(double *x_values, double *k_values, double *result, int N) {
+
+    int i, j;
+
+    fftw_complex *in, *out;
+
+    fftw_plan plan;
+
+
+
+    // Allocate memory for input and output arrays
+
+    in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+
+
+
+    // Create FFTW plan
+
+    plan = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+
+
+
+    // Fill input array with sinc values
+
+    for (i = 0; i < N; i++) {
+
+        in[i][0] = sinc(x_values[i]);
+
+        in[i][1] = 0.0; // Imaginary part is zero
+
+    }
+
+
+
+    // Execute FFT
+
+    fftw_execute(plan);
+
+
+
+    // Store results in the result array
+
+    for (i = 0; i < N/2; i++) {
+
+        result[i] = sqrt(out[i][0]*out[i][0] + out[i][1]*out[i][1]) / sqrt(2 * PI); // Normalize by sqrt(2 * pi)
+
+    }
+
+    for (i = N/2; i < N; i++) {
+
+        result[i] = sqrt(out[i][0]*out[i][0] + out[i][1]*out[i][1]) / sqrt(2 * PI); // Normalize by sqrt(2 * pi)
+
+    }
+
+
+
+    // Clean up
+
+    fftw_destroy_plan(plan);
+
+    fftw_free(in);
+
+    fftw_free(out);
+
+}
+
+
+
+int main() {
+
+    // Define the range of f values (frequency domain)
+
+    double f_min = -30;
+
+    double f_max = 30;
+
+    int num_f_points = 1000;
+
+    double *f_values = (double*) malloc(num_f_points * sizeof(double));
+
+    double *x_FT_numerical_values = (double*) malloc(num_f_points * sizeof(double));
+
+
+
+    // Generate f values
+
+    for (int i = 0; i < num_f_points; i++) {
+
+        f_values[i] = f_min + i * (f_max - f_min) / (num_f_points - 1);
+
+    }
+
+
+
+    // Compute numerical Fourier transform using FFTW
+
+    fourier_transform_sinc(f_values, f_values, x_FT_numerical_values, num_f_points);
+
+
+
+    // Rearrange the FFT values
+
+    double *rearranged_FT = (double*) malloc(num_f_points * sizeof(double));
+
+    int half_point = num_f_points / 2;
+
+    for (int i = 0; i < half_point; i++) {
+
+        rearranged_FT[i] = x_FT_numerical_values[half_point + i];
+
+        rearranged_FT[half_point + i] = x_FT_numerical_values[i];
+
+    }
+
+
+
+    // Print the results
+
+    printf("Frequency (f) : Fourier Transform (FFT)\n");
+
+    for (int i = 0; i < num_f_points; i++) {
+
+        printf("%f : %f\n", f_values[i], rearranged_FT[i]);
+
+    }
+
+
+
+    // Free dynamically allocated memory
+
+    free(f_values);
+
+    free(x_FT_numerical_values);
+
+    free(rearranged_FT);
+
+
+
+    return 0;
+
+}
+
