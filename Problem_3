@@ -1,0 +1,198 @@
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <gsl/gsl_fft_complex.h>
+
+#include <gsl/gsl_errno.h>
+
+#include <gsl/gsl_math.h>
+
+
+
+#define PI 3.14159265358979323846
+
+
+
+// Define sinc function
+
+double sinc(double x) {
+
+    if (x == 0) {
+
+        return 1.0;
+
+    } else {
+
+        return sin(x) / x;
+
+    }
+
+}
+
+
+
+// Compute the Fourier transform of sinc function using GSL
+
+void gsl_fourier_transform_sinc(double *x_values, double *k_values, double *result, int N) {
+
+    int i;
+
+    double *data;
+
+    gsl_fft_complex_wavetable *wavetable;
+
+    gsl_fft_complex_workspace *workspace;
+
+
+
+    // Allocate memory for data array
+
+    data = (double *)malloc(2 * N * sizeof(double));
+
+
+
+    // Fill data array with sinc values
+
+    for (i = 0; i < N; i++) {
+
+        data[2*i] = sinc(x_values[i]);
+
+        data[2*i+1] = 0.0; // Imaginary part is zero
+
+    }
+
+
+
+    // Initialize GSL Fourier transform
+
+    wavetable = gsl_fft_complex_wavetable_alloc(N);
+
+    workspace = gsl_fft_complex_workspace_alloc(N);
+
+
+
+    // Perform Fourier transform
+
+    gsl_fft_complex_forward(data, 1, N, wavetable, workspace);
+
+
+
+    // Store results in the result array
+
+    for (i = 0; i < N; i++) {
+
+        result[i] = sqrt(data[2*i]*data[2*i] + data[2*i+1]*data[2*i+1]) / sqrt(2 * PI);
+
+
+
+    }
+
+
+
+    // Free allocated memory
+
+    gsl_fft_complex_wavetable_free(wavetable);
+
+    gsl_fft_complex_workspace_free(workspace);
+
+    free(data);
+
+}
+
+
+
+int main() {
+
+    // Define the range of f values (frequency domain)
+
+    double f_min = -30;
+
+    double f_max = 30;
+
+    int num_f_points = 1000;
+
+    double *f_values = (double *)malloc(num_f_points * sizeof(double));
+
+    double *x_FT_numerical_values = (double *)malloc(num_f_points * sizeof(double));
+
+
+
+    // Generate f values
+
+    for (int i = 0; i < num_f_points; i++) {
+
+        f_values[i] = f_min + i * (f_max - f_min) / (num_f_points - 1);
+
+    }
+
+
+
+    // Compute numerical Fourier transform using GSL
+
+    gsl_fourier_transform_sinc(f_values, f_values, x_FT_numerical_values, num_f_points);
+
+
+
+    // Rearrange the FFT values
+
+    double *rearranged_FT = (double *)malloc(num_f_points * sizeof(double));
+
+    int half_point = num_f_points / 2;
+
+    for (int i = 0; i < half_point; i++) {
+
+        rearranged_FT[i] = x_FT_numerical_values[half_point + i];
+
+        rearranged_FT[half_point + i] = x_FT_numerical_values[i];
+
+    }
+
+
+
+    // Open a file for writing
+
+    FILE *file = fopen("fourier_transform_output.txt", "w");
+
+    if (file == NULL) {
+
+        fprintf(stderr, "Error opening file.\n");
+
+        return 1;
+
+    }
+
+
+
+    // Print the results to the file
+
+    fprintf(file, "Frequency (f) : Fourier Transform (FFT)\n");
+
+    for (int i = 0; i < num_f_points; i++) {
+
+        fprintf(file, "%f : %f\n", f_values[i], rearranged_FT[i]);
+
+    }
+
+
+
+    // Close the file
+
+    fclose(file);
+
+
+
+    // Free dynamically allocated memory
+
+    free(f_values);
+
+    free(x_FT_numerical_values);
+
+    free(rearranged_FT);
+
+
+
+    return 0;
+
+}
+
