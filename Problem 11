@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def box_function(x):
+    return np.where(np.logical_and(x > -1, x < 1), 1, 0)
+
+# Define the convolution of a function
+def convolution(f, g):
+    conv = np.zeros(len(f) + len(g) - 1)
+    for n in range(len(conv)):
+        for m in range(len(g)):
+            if n - m >= 0 and n - m < len(f):
+                conv[n] += f[n - m] * g[m]
+    return conv
+
+
+# Define the range of x values
+x_min = -6
+x_max = 6
+num_points = 100
+x_values = np.linspace(x_min, x_max, num_points)
+
+
+# Compute the box function
+f = box_function(x_values)
+
+# Compute the convolution of the box function with itself
+convolution_result = convolution(f, f) / np.sqrt(len(x_values)) #for normalisation
+
+# Plottingimport numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import convolve
+
+def box_function(x):
+    return np.where(np.logical_and(x > -1, x < 1), 1, 0)
+
+# Define the range of x values
+x = np.linspace(-6, 6, 100)
+
+# Compute the box function
+f = box_function(x)
+
+# Compute the convolution of the box function with itself
+convolution_result = np.convolve(f, f, mode='same') / np.sqrt(100)
+
+# Plotting
+plt.figure(figsize=(10, 5))
+
+plt.plot(x, f, label='Box Function')
+plt.plot(np.linspace(-6, 6, len(convolution_result)), convolution_result, label='Convolution')
+plt.title('Original Box Function and Its Convolution')
+plt.xlabel('x')
+plt.ylabel('Value')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+
