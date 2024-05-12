@@ -1,0 +1,44 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to compute the Fourier transform of e^(-x^2)
+def fourier_transform_exp_x2(w):
+    return np.exp(-w**2 / 4) * (2 * np.pi)
+
+# Range of frequency values (omega)
+omega_min = -10
+omega_max = 10
+num_omega_points = 1000
+omega_values = np.linspace(omega_min, omega_max, num_omega_points)
+
+# Compute the Fourier transform of e^(-x^2)
+exp_x2_FT = fourier_transform_exp_x2(omega_values)/np.sqrt(2*np.pi)
+
+# Read data from the text file (problem_3.txt)
+with open('problem_3.txt', 'r') as file:
+    data = file.readlines()
+
+# Extract x and y values from the data
+x_values = []
+y_values = []
+for line in data:
+    if line.strip():  # Check if the line is not empty
+        x, y = map(float, line.split(':'))  # Assuming columns are separated by ":"
+        x_values.append(x)
+        y_values.append(y)
+y_values_norm = np.array(y_values) / np.sqrt(2*np.pi)
+
+# Generate the original Gaussian function e^(-x^2)
+gaussian_function = np.exp(-np.array(x_values)**2)
+
+# Plot the Fourier transform of e^(-x^2), the data, and the original Gaussian function
+plt.plot(x_values, y_values_norm, label='FFT in C')
+plt.plot(omega_values, exp_x2_FT, label='Analytical FT of $e^{-x^2}$', linestyle='--')
+plt.plot(x_values, gaussian_function, label='$e^{-x^2}$', linestyle='-.')
+plt.xlabel('Frequency')
+plt.ylabel('Fourier Transform')
+plt.title('Comparison of Fourier Transforms')
+plt.legend()
+plt.xlim(-10, 10)
+plt.grid(True)
+plt.show()
