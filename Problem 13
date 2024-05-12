@@ -1,0 +1,68 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load data from the text file
+data = np.loadtxt('NOISE.txt')
+
+# Assuming the data contains only one column representing the amplitude
+amplitude = data
+
+# Generate time vector (assuming each data point is sampled at regular intervals)
+# If you have information about the sampling frequency, you can use it to create a more accurate time vector.
+# For example, if your data is sampled every second:
+sampling_frequency = 1  # Hz
+time = np.arange(len(amplitude)) / sampling_frequency
+
+# Compute the Discrete Fourier Transform (DFT)
+dft = np.fft.fft(amplitude)
+
+# Calculate the frequency vector
+freq = np.fft.fftfreq(len(amplitude), d=1/sampling_frequency)
+
+# Calculate the power spectrum using the periodogram method
+power_spectrum = np.abs(dft) ** 2 
+
+# Plotting the time-domain signal
+plt.figure(figsize=(8, 6))
+plt.plot(time, amplitude)
+plt.title('Data vs Time')
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.grid(True)
+plt.show()
+
+# Plotting the magnitude spectrum (DFT)
+plt.figure(figsize=(8, 6))
+plt.plot(freq, np.abs(dft))
+plt.title('Magnitude Spectrum (DFT)')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Magnitude')
+plt.grid(True)
+plt.show()
+
+# Plotting the power spectrum
+plt.figure(figsize=(8, 6))
+plt.plot(freq, power_spectrum)
+plt.title('Power Spectrum')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power')
+plt.grid(True)
+plt.show()
+
+# Bin the power spectrum into ten k bins
+k = 10
+bins = np.linspace(freq.min(), freq.max(), k + 1)
+digitized = np.digitize(freq, bins)
+binned_power_spectrum = np.zeros(k)
+for i in range(k):
+    bin_mask = (digitized == i + 1)
+    binned_power_spectrum[i] = np.mean(power_spectrum[bin_mask])
+
+# Plotting the binned power spectrum
+plt.figure(figsize=(8, 6))
+plt.bar(bins[:-1], binned_power_spectrum, width=np.diff(bins), align='edge')
+plt.title('Binned Power Spectrum')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power')
+plt.grid(True)
+plt.show()
