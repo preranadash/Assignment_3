@@ -1,0 +1,31 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sympy.integrals.transforms import fourier_transform
+
+# Define the range of f values (frequency domain)
+f_min = -10
+f_max = 10
+num_f_points = 1000
+f_values = np.linspace(f_min, f_max, num_f_points)
+
+# Defining constant function
+def const():
+    return 6
+
+def fourier_transform_const(x_values, k_values):
+    result = np.zeros_like(k_values, dtype=np.complex128)
+    for i, k in enumerate(k_values):
+        integral = np.sum(const() * np.exp(-1j * k * x_values))
+        result[i] = (1/np.sqrt(np.pi*2))*integral * (x_values[1] - x_values[0]) # assuming uniform spacing dx
+    return result
+
+x_FT_numerical_values = fourier_transform_const(f_values, f_values)
+
+# Plot the results
+plt.plot(f_values, np.real(x_FT_numerical_values), label='Numerical (Real part)')
+plt.xlabel('Frequency (f)')
+plt.ylabel('Fourier Transform')
+plt.title('Comparison of Analytical and Numerical Fourier Transform of sinc function')
+plt.legend()
+plt.grid(True)
+plt.show()
