@@ -1,0 +1,23 @@
+#analytical solution
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the function F(w)
+def F(w):
+    return np.where(np.abs(w) <= 1, np.pi/2, 0)
+
+# Define the range of frequencies
+w = np.linspace(-10, 10, 1000)
+
+# Compute the function values
+F_values = F(w) *np.sqrt(2*np.pi)
+
+# Plotting
+plt.figure(figsize=(8, 6))
+plt.plot(w, F_values, color='b', label='F(w)')
+plt.title('Analytical Fourier Transform')
+plt.xlabel('Frequency (w)')
+plt.ylabel('F(w)')
+plt.grid(True)
+plt.legend()
+plt.show()
