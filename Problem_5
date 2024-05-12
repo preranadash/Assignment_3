@@ -1,0 +1,37 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import time
+
+# Function to generate n numbers
+def generate_numbers(n):
+    return [i*2 + 3 for i in range(n)]
+
+# Initialize empty lists to store time differences
+time_diff_DFT_list = []
+time_diff_fft_list = []
+
+# Compute the DFT 
+n = 100
+for i in range(1, n+1):  
+    x = generate_numbers(i)
+    
+    # Compute the DFT using direct computation
+    start_time_1 = time.time()
+    X = np.fft.fft(x)
+    end_time_1 = time.time()
+    time_diff_DFT_list.append(end_time_1 - start_time_1)
+    
+    # Compute the DFT using np.fft.fft
+    start_time_2 = time.time()
+    DFT_using_fft = np.fft.fft(x)
+    end_time_2 = time.time()
+    time_diff_fft_list.append(end_time_2 - start_time_2)
+
+# Plotting
+plt.plot(range(1, n+1), time_diff_DFT_list, label='DFT using direct computation')
+plt.plot(range(1, n+1), time_diff_fft_list, label='DFT using np.fft.fft')
+plt.xlabel('n')
+plt.ylabel('Time taken')
+plt.title('Time variation with n')
+plt.legend()
+plt.show()
