@@ -1,0 +1,40 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as smp
+from sympy.integrals.transforms import fourier_transform
+
+#analyticalsolution
+def F(w):
+    return np.where(np.abs(w) <= 1, np.pi/2, 0)
+
+
+# Define the range of f values (frequency domain)
+f_min = -10
+f_max = 10
+num_f_points = 1000
+f_values = np.linspace(f_min, f_max, num_f_points)
+
+analytical_FT = F(f_values)*np.sqrt(2*np.pi)
+
+# Compute the numerical Fourier transform using numerical integration
+def sinc(x):
+    return np.where(x != 0, np.sin(x) / x, 1)
+
+def fourier_transform_sinc(x_values, k_values):
+    result = np.zeros_like(k_values, dtype=np.complex128)
+    for i, k in enumerate(k_values):
+        integral = np.sum(sinc(x_values) * np.exp(-1j * k * x_values))
+        result[i] =  integral * (x_values[1] - x_values[0]) # assuming uniform spacing dx (1/np.sqrt(np.pi*2))*
+    return result
+
+x_FT_numerical_values = fourier_transform_sinc(f_values, f_values)
+
+# Plot the results
+plt.plot(f_values, analytical_FT, color='b', label='Analytical')
+plt.plot(f_values, np.real(x_FT_numerical_values), label='Numerical (Real part)')
+plt.xlabel('Frequency (f)')
+plt.ylabel('Fourier Transform')
+plt.title('Comparison of Analytical and Numerical Fourier Transform of sinc function')
+plt.legend()
+plt.grid(True)
+plt.show()
