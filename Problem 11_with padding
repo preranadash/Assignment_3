@@ -1,0 +1,49 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def box_function(x):
+    return np.where(np.logical_and(x > -1, x < 1), 1, 0)
+
+def convolution(f, g, padding=0):
+    # Compute the length of the convolution result
+    conv_length = len(f) + len(g) - 1 + 2 * padding
+    
+    # Initialize convolution result with zeros
+    conv = np.zeros(conv_length)
+    
+    # Pad the input function g with zeros
+    g_padded = np.pad(g, (padding, padding), mode='constant')
+    
+    for n in range(conv_length):
+        for m in range(len(g_padded)):
+            if n - m >= 0 and n - m < len(f):
+                conv[n] += f[n - m] * g_padded[m]
+    return conv
+
+# Define the range of x values
+x_min = -6
+x_max = 6
+num_points = 100
+x_values = np.linspace(x_min, x_max, num_points)
+
+# Compute the box function
+f = box_function(x_values)
+
+# Define the padding length
+padding_length = 50
+
+# Compute the convolution of the box function with itself with zero padding
+convolution_result = convolution(f, f, padding=padding_length) / np.sqrt(len(x_values))
+
+# Plotting
+plt.figure(figsize=(10, 5))
+
+plt.plot(x_values, f, label='Original Box Function')
+plt.plot(np.linspace(x_min, x_max, len(convolution_result)), convolution_result, label='Convolution with Zero Padding')
+plt.title('Original Box Function and Its Convolution with Zero Padding')
+plt.xlabel('x')
+plt.ylabel('Value')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
