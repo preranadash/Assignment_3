@@ -2,36 +2,58 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-# Function to generate n numbers
-def generate_numbers(n):
-    return [i*2 + 3 for i in range(n)]
+# function to compute DFT
+def direct_dft(f):
+    n = len(f)
+    dft = np.zeros(n, dtype=np.complex128)
 
-# Initialize empty lists to store time differences
-time_diff_DFT_list = []
-time_diff_fft_list = []
+    for q in range(n):
+        for p in range(n):
+            dft[q] += (f[p] * np.exp(-2j * np.pi * p * q / n))/(np.sqrt(n))
 
-# Compute the DFT 
-n = 100
-for i in range(1, n+1):  
-    x = generate_numbers(i)
+    return dft
+
+# Generating random input data
+n = 16
+input_data = np.random.rand(n)
+
+# Timing direct computation DFT
+start_time = time.time()
+direct_result = direct_dft(input_data)
+direct_time = time.time() - start_time
+
+
+# Timing numpy fft
+start_time = time.time()
+fft_result = np.fft.fft(input_data, norm = "ortho")
+fft_time = time.time() - start_time
+
+n_values = range(4, 101)
+direct_times = []
+fft_times = []
+
+for n in n_values:
+    # Generating random input data
+    input_data = np.random.rand(n) + 1j * np.random.rand(n)
     
-    # Compute the DFT using direct computation
-    start_time_1 = time.time()
-    X = np.fft.fft(x)
-    end_time_1 = time.time()
-    time_diff_DFT_list.append(end_time_1 - start_time_1)
+    # Timing direct computation DFT
+    start_time = time.time()
+    direct_result = direct_dft(input_data)
+    direct_time = time.time() - start_time
+    direct_times.append(direct_time)
     
-    # Compute the DFT using np.fft.fft
-    start_time_2 = time.time()
-    DFT_using_fft = np.fft.fft(x)
-    end_time_2 = time.time()
-    time_diff_fft_list.append(end_time_2 - start_time_2)
+    # Timing numpy fft
+    start_time = time.time()
+    fft_result = np.fft.fft(input_data)
+    fft_time = time.time() - start_time
+    fft_times.append(fft_time)
 
-# Plotting
-plt.plot(range(1, n+1), time_diff_DFT_list, label='DFT using direct computation')
-plt.plot(range(1, n+1), time_diff_fft_list, label='DFT using np.fft.fft')
+# Plotting the results
+plt.plot(n_values, direct_times, label='DFT using direct computation', color = 'b')
+plt.plot(n_values, fft_times, label='DFT using numpy.fft.fft', color = 'r')
 plt.xlabel('n')
-plt.ylabel('Time taken')
-plt.title('Time variation with n')
+plt.ylabel('Time (seconds)')
+plt.title('Time Taken by DFT Methods vs n')
 plt.legend()
+plt.grid(True, alpha = 0.5)
 plt.show()
